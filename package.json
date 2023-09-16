@@ -1,0 +1,33 @@
+{
+  "name": "homework01-yonas650",
+  "version": "1.0.0",
+  "description": "Yonas650",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib",
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/nyu-csci-ua-0467-001-002-fall-2023/homework01-Yonas650.git"
+  },
+  "author": "Yonas",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/nyu-csci-ua-0467-001-002-fall-2023/homework01-Yonas650/issues"
+  },
+  "homepage": "https://github.com/nyu-csci-ua-0467-001-002-fall-2023/homework01-Yonas650#readme",
+  "devDependencies": {
+    "chai": "^4.3.8",
+    "eslint": "^8.49.0",
+    "eslint-plugin-mocha": "^10.1.0",
+    "mocha": "^10.2.0"
+  },
+  "dependencies": {
+    "clear": "^0.1.0",
+    "readline-sync": "^1.4.10"
+  }
+}
