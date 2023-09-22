@@ -88,3 +88,120 @@ function computerTurn(deck, computerHand, discardPile, nextPlay) {
     //return { cardPlayed };
     return { cardPlayed, nextPlay };
 }
+
+
+// Function to handle the player's turn
+function playerTurn(deck, playerHand, discardPile, nextPlay) {
+    let cardPlayed = null;
+    let newDeck = [...deck];// Create a copy of the deck
+
+    // Check for playable cards
+    const playableCards = playerHand.filter(card => matchesAnyProperty(card, nextPlay) || card.rank === '8');
+    // Logic for player's turn
+    if (playableCards.length > 0) {
+        console.log("Enter the number of the card you would like to play:");
+        console.log(handToString(playableCards, '\n', true));
+
+        let choice;
+        do {
+            choice = question(">");
+            choice = parseInt(choice);
+        } while (isNaN(choice) || choice < 1 || choice > playableCards.length);
+
+        cardPlayed = playableCards[choice - 1];
+        playerHand.splice(playerHand.indexOf(cardPlayed), 1);
+        discardPile.push(cardPlayed);
+
+        if (cardPlayed.rank === '8') {
+            console.log("CRAZY EIGHTS! You played an 8 - choose a suit");
+            SUITS.forEach((suit, index) => {
+                console.log(`${index + 1}: ${suit}`);
+            });
+
+            do {
+                choice = question(">");
+                choice = parseInt(choice);
+            } while (isNaN(choice) || choice < 1 || choice > SUITS.length);
+            cardPlayed.suit = SUITS[choice - 1];
+            console.log(`You chose to set the suit to ${cardPlayed.suit}`);
+        }
+    } else {
+        const drawnCards = [];
+        let choice;
+        do {
+            const [updatedDeck, drawnCard] = draw(newDeck, 1);// Update the deck copy
+            newDeck = updatedDeck;// Make the new deck the "official" deck
+            drawnCards.push(drawnCard[0]);
+            playerHand.push(drawnCard[0]);
+
+            if (matchesAnyProperty(drawnCard[0], nextPlay)) {
+                cardPlayed = drawnCard[0];
+            }
+        } while (!cardPlayed && newDeck.length > 0);
+        if (drawnCards.length > 0) {
+            console.log(`Cards drawn: ${handToString(drawnCards)}`);
+        }
+        if (cardPlayed) {
+            playerHand.splice(playerHand.indexOf(cardPlayed), 1);
+            discardPile.push(cardPlayed);
+            console.log(`😊 You played: ${cardPlayed.rank}${cardPlayed.suit}`);
+            if (cardPlayed.rank === '8') {//added to fix the case if 8 when drawn
+                console.log("CRAZY EIGHTS! You played an 8 - choose a suit");
+                SUITS.forEach((suit, index) => {
+                    console.log(`${index + 1}: ${suit}`);
+                });
+    
+                do {
+                    choice = question(">");
+                    choice = parseInt(choice);
+                } while (isNaN(choice) || choice < 1 || choice > SUITS.length);
+                cardPlayed.suit = SUITS[choice - 1];
+
+                console.log(`You chose to set the suit to ${cardPlayed.suit}`);
+            }
+           
+            
+        }
+        else {
+            console.log("No playable card was found.");
+        }
+    }
+
+    question("Press ENTER to continue");
+
+    return { cardPlayed, newDeck };// Return the new deck
+}
+
+const readFileAsync = promisify(fs.readFile);
+// Function to load deck from a JSON file
+async function loadDeckFromJSON(filePath) {
+    try {
+        const data = await readFileAsync(filePath, 'utf-8');
+        return JSON.parse(data);
+    } catch (err) {
+        throw err;
+    }
+}
+
+// Utility function to safely draw cards from the deck
+function safeDraw(deck, n) {
+    if (n > deck.length) {
+        console.error(`Tried to draw ${n} cards, but only ${deck.length} are left.`);
+        return [deck, []];
+    }
+    return draw(deck, n);
+}
+// Function to initialize a new deck
+function initializeNewDeck() {
+    const shuffledDeck = shuffle(generateDeck());
+    const { deck: deckAfterDeal, hands: [dealtPlayerHand, dealtComputerHand] } = deal(shuffledDeck, 2, 5);
+    const [restOfDeck, initialDiscardPile] = safeDraw(deckAfterDeal, 1);
+    
+    return {
+        deck: restOfDeck,
+        playerHand: dealtPlayerHand,
+        computerHand: dealtComputerHand,
+        discardPile: initialDiscardPile,
+        nextPlay: initialDiscardPile[0]
+    };
+}
