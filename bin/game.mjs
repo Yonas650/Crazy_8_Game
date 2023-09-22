@@ -46,6 +46,7 @@ function displayGameState(deck, playerHand, computerHand, discardPile, nextPlay)
 
 // Function to handle the computer's turn
 function computerTurn(deck, computerHand, discardPile, nextPlay) {
+    console.log("🤖 Computer's turn...");
     // Filtering cards that can be played
     const playableCards = computerHand.filter(card => matchesAnyProperty(card, nextPlay) || card.rank === '8');
     //console.log(`test: ${handToString(playableCards)}`)
@@ -69,7 +70,7 @@ function computerTurn(deck, computerHand, discardPile, nextPlay) {
     }
 
     if (cardPlayed.rank === '8') {
-       cardPlayed.suit = SUITS[Math.floor(Math.random() * SUITS.length)];// Modify the clone's suit
+       //cardPlayed.suit = SUITS[Math.floor(Math.random() * SUITS.length)];// Modify the clone's suit
         //nextPlay.suit=SUITS[Math.floor(Math.random() * SUITS.length)];
         nextPlay = {
             ...cardPlayed,
@@ -92,6 +93,7 @@ function computerTurn(deck, computerHand, discardPile, nextPlay) {
 
 // Function to handle the player's turn
 function playerTurn(deck, playerHand, discardPile, nextPlay) {
+    console.log("😊 Player's turn...");
     let cardPlayed = null;
     let newDeck = [...deck];// Create a copy of the deck
 
@@ -126,6 +128,8 @@ function playerTurn(deck, playerHand, discardPile, nextPlay) {
             console.log(`You chose to set the suit to ${cardPlayed.suit}`);
         }
     } else {
+        console.log(`😔 You have no playable cards`);
+        question(`Press ENTER to draw cards until matching: ${nextPlay.rank}, ${nextPlay.suit}, 8`);
         const drawnCards = [];
         let choice;
         do {
@@ -134,8 +138,9 @@ function playerTurn(deck, playerHand, discardPile, nextPlay) {
             drawnCards.push(drawnCard[0]);
             playerHand.push(drawnCard[0]);
 
-            if (matchesAnyProperty(drawnCard[0], nextPlay)) {
+            if (matchesAnyProperty(drawnCard[0], nextPlay)|| drawnCard[0].rank === '8') {
                 cardPlayed = drawnCard[0];
+                break;
             }
         } while (!cardPlayed && newDeck.length > 0);
         if (drawnCards.length > 0) {
@@ -175,12 +180,8 @@ function playerTurn(deck, playerHand, discardPile, nextPlay) {
 const readFileAsync = promisify(fs.readFile);
 // Function to load deck from a JSON file
 async function loadDeckFromJSON(filePath) {
-    try {
         const data = await readFileAsync(filePath, 'utf-8');
-        return JSON.parse(data);
-    } catch (err) {
-        throw err;
-    }
+        return JSON.parse(data);   
 }
 
 // Utility function to safely draw cards from the deck
