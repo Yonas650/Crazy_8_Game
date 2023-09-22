@@ -205,3 +205,89 @@ function initializeNewDeck() {
         nextPlay: initialDiscardPile[0]
     };
 }
+
+
+// Main game loop
+async function main() {
+    // Declare variables to hold game state
+   let deck;
+   let playerHand;
+   let computerHand;
+   let discardPile;
+   let nextPlay;
+   // Fetch JSON file path from command line argument
+   const jsonFilePath = process.argv[2];
+   // If a JSON file path is provided
+   if (jsonFilePath) {
+       try {
+           const loadedData = await loadDeckFromJSON(jsonFilePath);
+           
+           deck = loadedData.deck;
+           playerHand = loadedData.playerHand;
+           computerHand = loadedData.computerHand;
+           discardPile = loadedData.discardPile;
+           nextPlay = loadedData.nextPlay;
+       } catch (err) {
+           // Handle errors related to loading the JSON file
+           console.error('Error reading the deck from the JSON file:', err);
+           const response = question('Do you want to generate a new deck? (yes/no)');
+           if (response.toLowerCase() !== 'yes') {
+               console.log('Exiting the game. Please fix the JSON file and retry.');
+               return;
+           }
+           // Initialize a new deck if the JSON load failed and the user wants to continue
+           const gameData = initializeNewDeck();
+           deck = gameData.deck;
+           playerHand = gameData.playerHand;
+           computerHand = gameData.computerHand;
+           discardPile = gameData.discardPile;
+           nextPlay = gameData.nextPlay;
+       }
+   } else {
+       // Initialize a new deck if no JSON file path is provided
+       const gameData = initializeNewDeck();
+       deck = gameData.deck;
+       playerHand = gameData.playerHand;
+       computerHand = gameData.computerHand;
+       discardPile = gameData.discardPile;
+       nextPlay = gameData.nextPlay;
+   }
+       // Main gameplay loop
+   while (deck.length > 0 && playerHand.length > 0 && computerHand.length > 0) {
+       displayGameState(deck, playerHand, computerHand, discardPile, nextPlay);
+
+       // Call the updated playerTurn function
+       const playerCard = playerTurn(deck, playerHand, discardPile, nextPlay);
+       if (playerCard.cardPlayed) {
+           nextPlay = playerCard.cardPlayed;
+       }
+       deck = playerCard.newDeck;// Update the deck in the main loop
+
+
+       displayGameState(deck, playerHand, computerHand, discardPile, nextPlay);
+
+       const computerCard = computerTurn(deck, computerHand, discardPile, nextPlay);
+       if (computerCard.cardPlayed) {
+           //nextPlay = computerCard.cardPlayed;
+           nextPlay = computerCard.nextPlay || computerCard.cardPlayed;
+       }
+
+       displayGameState(deck, playerHand, computerHand, discardPile, nextPlay);
+   }
+   // Check game over conditions
+   if (playerHand.length === 0) {
+       console.log("Player has no more cards. Player wins!");
+       playerHand.length=0;
+   } else if (computerHand.length === 0) {
+       console.log("Computer has no more cards. Computer wins!");
+       computerHand.length=0;
+   } else {
+       console.log("Deck is empty. Game over!");
+       deck.length=0;
+   }
+}
+
+main();
+
+
+
